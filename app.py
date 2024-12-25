@@ -25,6 +25,11 @@ def plot_to_base64(fig):
     buffer.close()
     return base64.b64encode(image_png).decode('utf-8')
 
+
+@app.route('/')
+def home():
+    return "Welcome to the Flask API. Use the '/analyze' endpoint to send data.", 200
+    
 # Endpoint for receiving the Excel file dynamically
 @app.route('/upload-file', methods=['POST'])
 def upload_file():
