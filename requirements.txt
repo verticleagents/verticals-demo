@@ -4,4 +4,4 @@ numpy
 matplotlib
 seaborn
 scikit-learn
-openpyx
+openpyx==3.1.5
