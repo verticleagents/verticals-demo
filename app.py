@@ -16,32 +16,51 @@ os.makedirs(FIGURE_FOLDER, exist_ok=True)
 
 # Flask App Configuration
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.config['FIGURE_FOLDER'] = FIGURE_FOLDER
+# Configure upload folder and maximum file size
+app.config['UPLOAD_FOLDER'] = './uploads'  # Ensure this folder exists or create it
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # Limit file size to 16MB
+
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
     """
     API to upload an Excel file and trigger the analysis.
     """
+
+    # Check if the 'file' field is in the request
     if 'file' not in request.files:
+        app.logger.error("File field is missing in the request.")
         return jsonify({"error": "No file part in the request"}), 400
 
     file = request.files['file']
+
+    # Check if a file was selected
     if file.filename == '':
+        app.logger.error("No file was selected for upload.")
         return jsonify({"error": "No file selected"}), 400
 
-    if file:
+    # Validate file type
+    if not file.filename.endswith('.xlsx'):
+        app.logger.error(f"Invalid file type: {file.filename}")
+        return jsonify({"error": "Only .xlsx files are allowed"}), 400
+
+    # Save the file securely
+    try:
         filename = secure_filename(file.filename)
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
+        app.logger.info(f"File saved successfully at {filepath}")
 
         # Perform analysis on the uploaded file
         try:
             analysis_results = perform_analysis(filepath)
             return jsonify(analysis_results)
         except Exception as e:
-            return jsonify({"error": str(e)}), 500
+            app.logger.error(f"Error during analysis: {str(e)}")
+            return jsonify({"error": f"Analysis failed: {str(e)}"}), 500
+    except Exception as e:
+        app.logger.error(f"Error saving file: {str(e)}")
+        return jsonify({"error": f"Failed to save file: {str(e)}"}), 500
 
 # def perform_analysis(filepath):
 #     """
