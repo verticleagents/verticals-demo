@@ -4,3 +4,4 @@ numpy
 seaborn
 matplotlib
 werkzeug
+openpyxl==3.1.2
