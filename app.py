@@ -1,102 +1,93 @@
+import os
 from flask import Flask, request, jsonify
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.cluster import KMeans
-from sklearn.preprocessing import StandardScaler
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import classification_report, confusion_matrix
-import datetime
-import io
-import os
-import base64
+import matplotlib.pyplot as plt
+from datetime import datetime
+from werkzeug.utils import secure_filename
 
+# Create directories for uploads and static figures
+UPLOAD_FOLDER = './uploads'
+FIGURE_FOLDER = './static/figures'
+
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(FIGURE_FOLDER, exist_ok=True)
+
+# Flask App Configuration
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['FIGURE_FOLDER'] = FIGURE_FOLDER
 
-# Utility function to convert plots to Base64
-def plot_to_base64(fig):
-    """Convert Matplotlib plot to base64 for Flask response."""
-    buffer = io.BytesIO()
-    fig.savefig(buffer, format="png")
-    buffer.seek(0)
-    image_png = buffer.getvalue()
-    buffer.close()
-    return base64.b64encode(image_png).decode('utf-8')
-
-
-@app.route('/')
-def home():
-    return "Welcome to the Flask API. Use the '/analyze' endpoint to send data.", 200
-    
-# Endpoint for receiving the Excel file dynamically
-@app.route('/upload-file', methods=['POST'])
+@app.route('/upload', methods=['POST'])
 def upload_file():
-    try:
-        # Receive the file and JSON from the request
-        file = request.files['file']
-        sheets_json = request.form.get('sheets')  # JSON of sheets provided in the request
-        
-        if not file:
-            return jsonify({"error": "No file uploaded"}), 400
-        
-        # Read Excel file
-        excel_file = pd.ExcelFile(file)
-        
-        # Parse sheets based on provided JSON
-        sheets = {}
-        for sheet in pd.read_json(sheets_json).get("value", []):
-            display_name = sheet['DisplayName']
-            sheets[display_name] = excel_file.parse(display_name)
-        
-        # Store parsed sheets globally for analysis
-        global menu, customers, transactions, order_details, customer_feedback
-        global store_location, summary_statistics, customer_segments
-        global store_performance, product_analysis, time_analysis
+    """
+    API to upload an Excel file and trigger the analysis.
+    """
+    if 'file' not in request.files:
+        return jsonify({"error": "No file part in the request"}), 400
 
-        menu = sheets.get("Menu")
-        customers = sheets.get("Customers")
-        transactions = sheets.get("Transactions")
-        order_details = sheets.get("Order_Details")
-        customer_feedback = sheets.get("Customer_Feedback")
-        store_location = sheets.get("Store_Locations")
-        summary_statistics = sheets.get("Summary_Statistics")
-        customer_segments = sheets.get("Customer_Segments")
-        store_performance = sheets.get("Store_Performance")
-        product_analysis = sheets.get("Product_Analysis")
-        time_analysis = sheets.get("Time_Analysis")
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"error": "No file selected"}), 400
 
-        return jsonify({"message": "File and sheets processed successfully"}), 200
+    if file:
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+
+        # Perform analysis on the uploaded file
+        try:
+            analysis_results = perform_analysis(filepath)
+            return jsonify(analysis_results)
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+def perform_analysis(filepath):
+    """
+    Perform analysis and save figures based on the uploaded Excel file.
+    """
+    excel_file = pd.ExcelFile(filepath)
     
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    # Load sheets
+    menu = excel_file.parse("Menu")
+    customers = excel_file.parse("Customers")
+    transactions = excel_file.parse("Transactions")
+    order_details = excel_file.parse("Order_Details")
+    customer_feedback = excel_file.parse("Customer_Feedback")
+    store_location = excel_file.parse("Store_Locations")
 
-# Endpoint for high-value customers
-@app.route('/high_value_customers', methods=['GET'])
-def high_value_customers():
-    high_value = customers[customers['total_spend'] > customers['total_spend'].quantile(0.75)]
-    high_value_sorted = high_value.sort_values(by='total_spend', ascending=False)
-    return high_value_sorted.head(10).to_json(orient='records')
+    # High-value customer analysis
+    high_value_customers = customers[customers['total_spend'] > customers['total_spend'].quantile(0.75)]
+    high_value_customers = high_value_customers.sort_values(by='total_spend', ascending=False)
+    top_10_high_value = high_value_customers.head(10)
+    fig, ax = plt.subplots(figsize=(10, 6))
+    sns.barplot(data=top_10_high_value, x='customer_id', y='total_spend', palette='viridis', ax=ax)
+    ax.set_title("Top 10 High-Value Customers by Total Spend")
+    figpath1 = os.path.join(app.config['FIGURE_FOLDER'], 'top_10_high_value_customers.png')
+    plt.savefig(figpath1)
+    plt.close()
 
-# Endpoint for churned customers
-@app.route('/churned_customers', methods=['GET'])
-def churned_customers():
+    # Churned customers analysis
     transactions['date_time'] = pd.to_datetime(transactions['date_time'])
     customers['join_date'] = pd.to_datetime(customers['join_date'])
-    six_months_ago = pd.Timestamp.now() - pd.DateOffset(months=6)
     latest_transactions = transactions.groupby('customer_id')['date_time'].max().reset_index()
     latest_transactions.rename(columns={'date_time': 'last_transaction_date'}, inplace=True)
     customers_with_last_transaction = customers.merge(latest_transactions, on='customer_id', how='left')
-    churned = customers_with_last_transaction[
+    six_months_ago = pd.Timestamp.now() - pd.DateOffset(months=6)
+    churned_customers = customers_with_last_transaction[
         (customers_with_last_transaction['last_transaction_date'] < six_months_ago) |
         (customers_with_last_transaction['last_transaction_date'].isna())
     ]
-    return churned[['customer_id', 'age_group', 'total_spend']].to_json(orient='records')
+    churned_by_age_group = churned_customers.groupby('age_group').size().reset_index(name='count')
+    fig, ax = plt.subplots(figsize=(10, 6))
+    sns.barplot(data=churned_by_age_group, x='age_group', y='count', palette='coolwarm', ax=ax)
+    ax.set_title("Churned Customers by Age Group")
+    figpath2 = os.path.join(app.config['FIGURE_FOLDER'], 'churned_customers_by_age_group.png')
+    plt.savefig(figpath2)
+    plt.close()
 
-# Endpoint for store performance metrics
-@app.route('/store_performance', methods=['GET'])
-def store_performance_metrics():
+    # Aggregate store performance
     store_performance = transactions.groupby('store_location').agg(
         total_transactions=('transaction_id', 'count'),
         avg_transaction_value=('final_total', 'mean'),
@@ -105,34 +96,26 @@ def store_performance_metrics():
     store_transactions = transactions.merge(store_ratings, on='transaction_id', how='left')
     store_avg_ratings = store_transactions.groupby('store_location')['rating_overall'].mean().reset_index()
     store_performance = store_performance.merge(store_avg_ratings, on='store_location', how='left')
-    return store_performance.to_json(orient='records')
+    fig, ax = plt.subplots(figsize=(10, 6))
+    sns.barplot(data=store_performance, x='store_location', y='total_transactions', palette='magma', ax=ax)
+    ax.set_title("Total Transactions by Store Location")
+    figpath3 = os.path.join(app.config['FIGURE_FOLDER'], 'total_transactions_by_store.png')
+    plt.savefig(figpath3)
+    plt.close()
 
-# Endpoint for top products
-@app.route('/top_products', methods=['GET'])
-def top_products():
-    product_performance = order_details.groupby('item_name').agg(
-        total_orders=('quantity', 'sum'),
-        total_revenue=('total_price', 'sum'),
-    ).reset_index()
-    product_ratings = customer_feedback.merge(order_details, on='transaction_id', how='left').groupby('item_name')['rating_overall'].mean().reset_index()
-    product_performance = product_performance.merge(product_ratings, on='item_name', how='left')
-    top_products = product_performance.sort_values(by='total_orders', ascending=False).head(10)
-    return top_products.to_json(orient='records')
+    return {
+        "figures": {
+            "top_10_high_value_customers": figpath1,
+            "churned_customers_by_age_group": figpath2,
+            "total_transactions_by_store": figpath3
+        },
+        "metrics": {
+            "high_value_customers_count": len(high_value_customers),
+            "churned_customers_count": len(churned_customers),
+            "store_performance_summary": store_performance.to_dict(orient='records')
+        }
+    }
 
-# Endpoint for hourly trend plot
-@app.route('/hourly_trend_plot', methods=['GET'])
-def hourly_trend_plot():
-    transactions['hour'] = transactions['date_time'].dt.hour
-    hourly_analysis = transactions.groupby('hour').agg(
-        transaction_count=('transaction_id', 'count')
-    ).reset_index()
-    fig = plt.figure(figsize=(10, 6))
-    sns.lineplot(data=hourly_analysis, x='hour', y='transaction_count')
-    plt.title("Hourly Transaction Trends")
-    plt.xlabel("Hour of Day")
-    plt.ylabel("Transaction Count")
-    image_base64 = plot_to_base64(fig)
-    return jsonify({"plot": image_base64})
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8080))
