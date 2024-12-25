@@ -10,6 +10,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, confusion_matrix
 import datetime
 import io
+import os
 import base64
 
 app = Flask(__name__)
@@ -129,4 +130,5 @@ def hourly_trend_plot():
     return jsonify({"plot": image_base64})
 
 if __name__ == '__main__':
-    app.run(debug=True, port=8080)
+    port = int(os.environ.get('PORT', 8080))
+    app.run(host='0.0.0.0', port=port)
