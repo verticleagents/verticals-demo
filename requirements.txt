@@ -5,4 +5,4 @@ numpy
 seaborn
 matplotlib
 werkzeug
-
+gunicorn==21.2.0
