@@ -131,12 +131,6 @@ def begin_analysis():
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
 if __name__ == '__main__':
-    # Create uploads folder if it doesn't exist
-    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-    logging.info("Starting Flask application.")
-    app.run(debug=True)
-
-if __name__ == '__main__':
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
     logging.info("Starting Flask application.")
     app.run(debug=True, port=8080)
