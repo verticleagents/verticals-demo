@@ -131,8 +131,11 @@ def begin_analysis():
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
 if __name__ == '__main__':
+    # Create uploads folder if it doesn't exist
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-    logging.info("Starting Flask application.")
-    app.run(debug=True, port=8080)
-    port = int(os.environ.get('PORT', 8080))
+    
+    # Get port from environment variable or default to 5000
+    port = int(os.environ.get('PORT', 5000))
+    
+    logging.info(f"Starting Flask application on port {port}")
     app.run(host='0.0.0.0', port=port)
