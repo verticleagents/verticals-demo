@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Agent - Customer Retention Solution</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/ScrollTrigger.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: #0a0a0f;
+            color: #ffffff;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, 
+                rgba(79, 159, 255, 0.1),
+                rgba(255, 79, 139, 0.1),
+                rgba(79, 159, 255, 0.1));
+            animation: gradientBG 15s ease infinite;
+            z-index: 0;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .floating-element {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(79, 159, 255, 0.1);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .element-1 { width: 100px; height: 100px; top: 20%; left: 10%; animation: float1 20s infinite; }
+        .element-2 { width: 150px; height: 150px; top: 60%; right: 15%; animation: float2 25s infinite; }
+        .element-3 { width: 80px; height: 80px; top: 40%; left: 50%; animation: float3 18s infinite; }
+
+        @keyframes float1 {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(100px, 50px) rotate(180deg); }
+        }
+
+        @keyframes float2 {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(-70px, -30px) rotate(-180deg); }
+        }
+
+        @keyframes float3 {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(50px, 20px) scale(1.2); }
+        }
+
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        nav {
+            padding: 20px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(10, 10, 15, 0.95);
+            backdrop-filter: blur(10px);
+        }
+
+        nav .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4f9fff;
+        }
+
+        .nav-links a {
+            color: #ffffff;
+            text-decoration: none;
+            margin-left: 30px;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #4f9fff;
+        }
+
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 100px 0;
+        }
+
+        .hero-content {
+            width: 50%;
+        }
+
+        .hero-image {
+            width: 50%;
+            position: relative;
+        }
+
+        .ai-sphere {
+            position: relative;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle at 30% 30%, #4f9fff, #1a1a2e);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+            box-shadow: 0 0 50px rgba(79, 159, 255, 0.3);
+            overflow: hidden;
+        }
+
+        .ai-sphere::before {
+            content: '';
+            position: absolute;
+            width: 150%;
+            height: 150%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: rotate(-45deg);
+            animation: shimmer 3s linear infinite;
+        }
+
+        .ai-sphere::after {
+            content: '';
+            position: absolute;
+            top: 10%;
+            left: 10%;
+            width: 20%;
+            height: 20%;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) rotate(-45deg); }
+            100% { transform: translateX(100%) rotate(-45deg); }
+        }
+
+        h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #4f9fff, #ff4f8b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        h2 {
+            font-size: 36px;
+            margin-bottom: 30px;
+            color: #fff;
+        }
+
+        .highlight {
+            color: #4f9fff;
+        }
+
+        p {
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            color: #cccccc;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin-top: 50px;
+        }
+
+        .feature-card {
+            position: relative;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s;
+            border: 1px solid rgba(79, 159, 255, 0.1);
+            overflow: hidden;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(79, 159, 255, 0.3);
+        }
+
+        .feature-card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(79, 159, 255, 0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .feature-card:hover::after {
+            opacity: 1;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #4f9fff, #ff4f8b, #4f9fff);
+            z-index: -1;
+            animation: borderGlow 3s linear infinite;
+            filter: blur(10px);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .feature-card:hover::before {
+            opacity: 0.5;
+        }
+
+        @keyframes borderGlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .feature-card h3 {
+            color: #4f9fff;
+            margin-bottom: 15px;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 15px 30px;
+            background: linear-gradient(45deg, #4f9fff, #ff4f8b);
+            color: white;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: bold;
+            transition: transform 0.3s;
+        }
+
+        .cta-button:hover {
+            transform: scale(1.05);
+        }
+
+        .section {
+            padding: 100px 0;
+            position: relative;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+            margin: 50px 0;
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border: 1px solid rgba(79, 159, 255, 0.1);
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #4f9fff;
+            margin-bottom: 10px;
+        }
+
+        .workflow {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin: 50px 0;
+        }
+
+        .workflow-step {
+            text-align: center;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            position: relative;
+            border: 1px solid rgba(79, 159, 255, 0.1);
+        }
+
+        .workflow-step:not(:last-child)::after {
+            content: '→';
+            position: absolute;
+            right: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #4f9fff;
+            font-size: 24px;
+        }
+
+        .testimonials {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin: 50px 0;
+        }
+
+        .testimonial-card {
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            border: 1px solid rgba(79, 159, 255, 0.1);
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .author-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #4f9fff;
+            margin-right: 15px;
+        }
+
+        footer {
+            background: rgba(10, 10, 15, 0.95);
+            padding: 50px 0;
+            position: relative;
+            z-index: 2;
+            border-top: 1px solid rgba(79, 159, 255, 0.1);
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+        }
+
+        .footer-section h4 {
+            color: #4f9fff;
+            margin-bottom: 20px;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 10px;
+        }
+
+        .footer-section ul li a {
+            color: #cccccc;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-section ul li a:hover {
+            color: #4f9fff;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .social-links a {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+
+        .social-links a:hover {
+            background: #4f9fff;
+        }
+
+        .copyright {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            nav {
+                padding: 15px 0;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .hero {
+                flex-direction: column;
+                text-align: center;
+                padding: 120px 0 50px;
+            }
+
+            .hero-content, .hero-image {
+                width: 100%;
+            }
+
+            h1 {
+                font-size: 36px;
+            }
+
+            .features, .stats, .workflow, .testimonials, .footer-content {
+                grid-template-columns: 1fr;
+            }
+
+            .ai-sphere {
+                width: 300px;
+                height: 300px;
+                margin: 50px auto;
+            }
+
+            .workflow-step::after {
+                display: none;
+            }
+
+            .stat-card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-element element-1"></div>
+    <div class="floating-element element-2"></div>
+    <div class="floating-element element-3"></div>
+
+    <div id="particles-js"></div>
+    
+    <nav>
+        <div class="container">
+            <div class="logo">AI Agent</div>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#workflow">How It Works</a>
+                <a href="#testimonials">Testimonials</a>
+                <a href="#contact">Contact</a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Transform Customer Retention with AI</h1>
+                <p>Harness the power of advanced AI and Machine Learning to revolutionize your customer retention strategies. Our AI Agent delivers precise insights and predictive analytics to help you maintain and grow your customer base.</p>
+                <a href="#contact" class="cta-button">Get Started</a>
+                
+                <div class="features">
+                    <div class="feature-card">
+                        <h3>ML-Powered Retention</h3>
+                        <p>Leverage Propensity Modeling, Neural Networks, and Uplift Modeling to predict and improve customer retention rates with unprecedented accuracy.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Advanced Analytics</h3>
+                        <p>Gain deeper insights through Trend Analysis, Funnel Analysis, and Cohort Analysis to understand and optimize customer behavior patterns.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="hero-image">
+                <div class="ai-sphere"></div>
+            </div>
+        </section>
+
+        <section id="features" class="section">
+            <h2>Our Powerful Features</h2>
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number">95%</div>
+                    <p>Prediction Accuracy</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">2.5x</div>
+                    <p>ROI Improvement</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">60%</div>
+                    <p>Churn Reduction</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">24/7</div>
+                    <p>Real-time Analysis</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="workflow" class="section">
+            <h2>How It Works</h2>
+            <div class="workflow">
+                <div class="workflow-step">
+                    <h3>Data Integration</h3>
+                    <p>Connect your customer data sources for comprehensive analysis</p>
+                </div>
+                <div class="workflow-step">
+                    <h3>AI Analysis</h3>
+                    <p>Our ML models process and analyze patterns in real-time</p>
+                </div>
+                <div class="workflow-step">
+                    <h3>Actionable Insights</h3>
+                    <p>Receive targeted recommendations and predictions</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="testimonials" class="section">
+            <h2>What Our Clients Say</h2>
+            <div class="testimonials">
+                <div class="testimonial-card">
+                    <p>"The AI Agent has transformed how we approach customer retention. We've seen a 40% increase in customer lifetime value."</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar"></div>
+                        <div>
+                            <h4>Sarah Johnson</h4>
+                            <p>CEO, TechCorp</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <p>"Implementation was smooth, and the results were immediate. Our churn rate dropped by 45% in the first quarter."</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar"></div>
+                        <div>
+                            <h4>Michael Chen</h4>
+                            <p>CTO, DataFlow</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Company</h4>
+                    <ul>
+                        <li><a href="#about">About Us</a></li>
+                        <li><a href="#careers">Careers</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="#blog">Blog</a></li>
+                        <li><a href="#documentation">Documentation</a></li>
+                        <li><a href="#support">Support</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="#privacy">Privacy Policy</a></li>
+                        <li><a href="#terms">Terms of Service</a></li>
+                        <li><a href="#compliance">Compliance</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Connect</h4>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2024 AI Agent. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        particlesJS('particles-js',
+          {
+            "particles": {
+              "number": {
+                "value": 100,
+                "density": {
+                  "enable": true,
+                  "value_area": 800
+                }
+              },
+              "color": {
+                "value": ["#4f9fff", "#ff4f8b"]
+              },
+              "shape": {
+                "type": ["circle", "triangle"],
+                "stroke": {
+                  "width": 0,
+                  "color": "#000000"
+                }
+              },
+              "opacity": {
+                "value": 0.5,
+                "random": true,
+                "anim": {
+                  "enable": true,
+                  "speed": 1,
+                  "opacity_min": 0.1,
+                  "sync": false
+                }
+              },
+              "size": {
+                "value": 3,
+                "random": true,
+                "anim": {
+                  "enable": true,
+                  "speed": 2,
+                  "size_min": 0.1,
+                  "sync": false
+                }
+              },
+              "line_linked": {
+                "enable": true,
+                "distance": 150,
+                "color": "#4f9fff",
+                "opacity": 0.4,
+                "width": 1
+              },
+              "move": {
+                "enable": true,
+                "speed": 4,
+                "direction": "none",
+                "random": true,
+                "straight": false,
+                "out_mode": "out",
+                "bounce": false,
+                "attract": {
+                  "enable": true,
+                  "rotateX": 600,
+                  "rotateY": 1200
+                }
+              }
+            },
+            "interactivity": {
+              "detect_on": "canvas",
+              "events": {
+                "onhover": {
+                  "enable": true,
+                  "mode": "grab"
+                },
+                "onclick": {
+                  "enable": true,
+                  "mode": "push"
+                },
+                "resize": true
+              },
+              "modes": {
+                "grab": {
+                  "distance": 140,
+                  "line_linked": {
+                    "opacity": 1
+                  }
+                },
+                "push": {
+                  "particles_nb": 4
+                }
+              }
+            },
+            "retina_detect": true
+          }
+        );
+
+        gsap.registerPlugin(ScrollTrigger);
+
+        gsap.utils.toArray('.feature-card').forEach(card => {
+            gsap.from(card, {
+                y: 50,
+                opacity: 0,
+                duration: 1,
+                scrollTrigger: {
+                    trigger: card,
+                    start: "top 80%",
+                    end: "top 50%",
+                    scrub: 1
+                }
+            });
+        });
+
+        gsap.utils.toArray('.stat-card').forEach(stat => {
+            gsap.from(stat, {
+                scale: 0.8,
+                opacity: 0,
+                duration: 1,
+                scrollTrigger: {
+                    trigger: stat,
+                    start: "top 80%",
+                    end: "top 50%",
+                    scrub: 1
+                }
+            });
+        });
+    </script>
+</body>
+</html>
