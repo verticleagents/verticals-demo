@@ -284,6 +284,11 @@ def perform_analysis(filepath):
     return results
 
 
+@app.route('/index')
+def index():
+    return render_template('index.html')
+
+
 @app.route('/')
 def home():
     return render_template("upload.html")
