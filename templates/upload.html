@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Customer Analysis Dashboard</title>
+    <title>Retail Analytics Dashboard</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
@@ -11,7 +11,7 @@
 <body class="bg-gray-50 min-h-screen">
     <nav class="bg-indigo-600 shadow-lg">
         <div class="max-w-7xl mx-auto px-4 py-4">
-            <h1 class="text-white text-2xl font-semibold">Customer Analysis Dashboard</h1>
+            <h1 class="text-white text-2xl font-semibold">Retail Analytics Dashboard</h1>
         </div>
     </nav>
 
@@ -22,9 +22,6 @@
             <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                 <form id="uploadForm" class="space-y-4">
                     <div class="flex flex-col items-center">
-                        <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-                        </svg>
                         <label class="cursor-pointer bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition-colors">
                             Choose Excel File
                             <input type="file" name="file" class="hidden" accept=".xlsx,.xls">
@@ -34,9 +31,6 @@
                 </form>
                 <div id="uploadStatus" class="mt-4 hidden">
                     <div class="flex items-center justify-center text-sm">
-                        <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                        </svg>
                         <span class="text-green-600">File uploaded successfully!</span>
                     </div>
                 </div>
@@ -61,54 +55,13 @@
         <!-- Results Section -->
         <div id="resultsSection" class="hidden">
             <h2 class="text-xl font-semibold mb-4 text-gray-800">3. Analysis Results</h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- High Value Customers Card -->
-                <div class="bg-white rounded-lg shadow-md p-6">
-                    <h3 class="text-lg font-semibold mb-3 text-gray-800">High Value Customers</h3>
-                    <div class="text-3xl font-bold text-indigo-600" id="highValueCount">-</div>
-                    <p class="text-sm text-gray-500">Top quartile customers</p>
-                </div>
-
-                <!-- Churned Customers Card -->
-                <div class="bg-white rounded-lg shadow-md p-6">
-                    <h3 class="text-lg font-semibold mb-3 text-gray-800">Churned Customers</h3>
-                    <div class="text-3xl font-bold text-red-600" id="churnedCount">-</div>
-                    <p class="text-sm text-gray-500">Inactive for 6+ months</p>
-                </div>
-
-                <!-- Store Performance -->
-                <div class="bg-white rounded-lg shadow-md p-6 md:col-span-2">
-                    <h3 class="text-lg font-semibold mb-3 text-gray-800">Store Performance</h3>
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Store Location</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Transactions</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Transaction Value</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rating</th>
-                                </tr>
-                            </thead>
-                            <tbody id="storePerformanceBody" class="bg-white divide-y divide-gray-200">
-                                <!-- Data will be populated here -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Age Group Distribution -->
-                <div class="bg-white rounded-lg shadow-md p-6 md:col-span-2">
-                    <h3 class="text-lg font-semibold mb-3 text-gray-800">Churned Customers by Age Group</h3>
-                    <canvas id="ageGroupChart"></canvas>
-                </div>
+            <div id="chartsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Charts will be dynamically added here -->
             </div>
         </div>
     </main>
 
     <script>
-        let ageGroupChart = null;
-
         $(document).ready(function() {
             $('input[type="file"]').change(function() {
                 const file = this.files[0];
@@ -155,56 +108,146 @@
         });
 
         function displayResults(results) {
-            // Update high value customers count
-            $('#highValueCount').text(results.high_value_customers_count.toLocaleString());
-            
-            // Update churned customers count
-            $('#churnedCount').text(results.churned_customers_count.toLocaleString());
-            
-            // Update store performance table
-            const storePerformanceBody = $('#storePerformanceBody');
-            storePerformanceBody.empty();
-            
-            results.store_performance_summary.forEach(store => {
-                const rating = results.average_ratings_by_store[store.store_location] || 'N/A';
-                const row = `
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap">${store.store_location}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">${store.total_transactions.toLocaleString()}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">$${store.avg_transaction_value.toFixed(2)}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">${typeof rating === 'number' ? rating.toFixed(1) : rating}</td>
-                    </tr>
-                `;
-                storePerformanceBody.append(row);
+            const container = $('#chartsContainer');
+            container.empty();
+
+            // High Value Customers
+            createChart(container, 'High Value Customers', {
+                labels: results.top_customers.map(c => `Customer ${c.customer_id}`),
+                datasets: [{
+                    label: 'Total Spend',
+                    data: results.top_customers.map(c => c.total_spend),
+                    backgroundColor: 'rgba(79, 70, 229, 0.6)',
+                    borderColor: 'rgba(79, 70, 229, 1)'
+                }]
             });
 
-            // Update age group chart
-            const ageGroupData = results.churned_by_age_group;
-            if (ageGroupChart) {
-                ageGroupChart.destroy();
-            }
-            
-            const ctx = document.getElementById('ageGroupChart').getContext('2d');
-            ageGroupChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(ageGroupData),
-                    datasets: [{
-                        label: 'Churned Customers',
-                        data: Object.values(ageGroupData),
-                        backgroundColor: 'rgba(79, 70, 229, 0.6)',
-                        borderColor: 'rgba(79, 70, 229, 1)',
-                        borderWidth: 1
-                    }]
-                },
+            // Churned Customers
+            createChart(container, 'Churned Customers', {
+                labels: ['Churned Customers'],
+                datasets: [{
+                    label: 'Count',
+                    data: [results.churned_customers_count],
+                    backgroundColor: 'rgba(229, 70, 79, 0.6)',
+                    borderColor: 'rgba(229, 70, 79, 1)'
+                }]
+            });
+
+            // Transactions by Store
+            createChart(container, 'Transactions by Store', {
+                labels: results.store_performance_summary.map(s => s.store_location),
+                datasets: [{
+                    label: 'Total Transactions',
+                    data: results.store_performance_summary.map(s => s.total_transactions),
+                    backgroundColor: 'rgba(79, 70, 229, 0.6)',
+                    borderColor: 'rgba(79, 70, 229, 1)'
+                }]
+            });
+
+            // Store Ratings vs Transaction Value
+            createChart(container, 'Store Ratings vs Transaction Value', {
+                labels: results.store_performance_summary.map(s => s.store_location),
+                datasets: [{
+                    label: 'Average Transaction Value',
+                    data: results.store_performance_summary.map(s => s.avg_transaction_value),
+                    backgroundColor: 'rgba(79, 70, 229, 0.6)',
+                    borderColor: 'rgba(79, 70, 229, 1)'
+                }, {
+                    label: 'Average Rating',
+                    data: results.store_performance_summary.map(s => results.average_ratings_by_store[s.store_location] || 0),
+                    backgroundColor: 'rgba(229, 70, 79, 0.6)',
+                    borderColor: 'rgba(229, 70, 79, 1)'
+                }]
+            });
+
+            // Average Spend by Age Group
+            createChart(container, 'Average Spend by Age Group', {
+                labels: Object.keys(results.avg_spend_by_age),
+                datasets: [{
+                    label: 'Average Spend',
+                    data: Object.values(results.avg_spend_by_age),
+                    backgroundColor: 'rgba(79, 70, 229, 0.6)',
+                    borderColor: 'rgba(79, 70, 229, 1)'
+                }]
+            });
+
+            // Average Spend by Visit Frequency
+            createChart(container, 'Average Spend by Visit Frequency', {
+                labels: Object.keys(results.avg_spend_by_frequency),
+                datasets: [{
+                    label: 'Average Spend',
+                    data: Object.values(results.avg_spend_by_frequency),
+                    backgroundColor: 'rgba(79, 70, 229, 0.6)',
+                    borderColor: 'rgba(79, 70, 229, 1)'
+                }]
+            });
+
+            // Top 10 Products by Orders
+            createChart(container, 'Top 10 Products by Orders', {
+                labels: results.top_products.map(p => p.item_name),
+                datasets: [{
+                    label: 'Total Orders',
+                    data: results.top_products.map(p => p.total_orders),
+                    backgroundColor: 'rgba(79, 70, 229, 0.6)',
+                    borderColor: 'rgba(79, 70, 229, 1)'
+                }]
+            });
+
+            // Product Revenue vs Rating
+            createChart(container, 'Product Revenue vs Rating', {
+                labels: results.product_ratings.map(p => p.item_name),
+                datasets: [{
+                    label: 'Revenue',
+                    data: results.product_ratings.map(p => p.total_revenue),
+                    backgroundColor: 'rgba(79, 70, 229, 0.6)',
+                    borderColor: 'rgba(79, 70, 229, 1)'
+                }, {
+                    label: 'Rating',
+                    data: results.product_ratings.map(p => p.rating_overall),
+                    backgroundColor: 'rgba(229, 70, 79, 0.6)',
+                    borderColor: 'rgba(229, 70, 79, 1)'
+                }]
+            });
+
+            // Hourly Transaction Trends
+            createChart(container, 'Hourly Transaction Trends', {
+                labels: results.hourly_trends.map(h => h.hour),
+                datasets: [{
+                    label: 'Transaction Count',
+                    data: results.hourly_trends.map(h => h.transaction_count),
+                    backgroundColor: 'rgba(79, 70, 229, 0.6)',
+                    borderColor: 'rgba(79, 70, 229, 1)'
+                }]
+            });
+
+            // Seasonal Transaction Trends
+            createChart(container, 'Seasonal Transaction Trends', {
+                labels: results.seasonal_trends.map(s => s.season),
+                datasets: [{
+                    label: 'Transaction Count',
+                    data: results.seasonal_trends.map(s => s.transaction_count),
+                    backgroundColor: 'rgba(79, 70, 229, 0.6)',
+                    borderColor: 'rgba(79, 70, 229, 1)'
+                }]
+            });
+        }
+
+        function createChart(container, title, data) {
+            const canvas = $('<canvas></canvas>');
+            container.append(`
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-lg font-semibold mb-3">${title}</h3>
+                </div>
+            `).find('div:last').append(canvas);
+
+            new Chart(canvas[0].getContext('2d'), {
+                type: title.includes('vs') ? 'line' : 'bar',
+                data: data,
                 options: {
                     responsive: true,
                     scales: {
                         y: {
-                            beginAtZero: true,
-                            ticks: {
-                                precision: 0
-                            }
+                            beginAtZero: true
                         }
                     }
                 }
