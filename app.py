@@ -4,7 +4,8 @@ import pandas as pd
 import logging
 import datetime
 import json
-
+from itertools import combinations
+import numpy as np
 # Initialize Flask app
 app = Flask(__name__)
 
@@ -57,6 +58,8 @@ def analyze_customers(Customers, Transactions):
         'top_customers': top_10_customers
     }
 
+
+
 def analyze_store_performance(Transactions, Customer_Feedback):
     logging.info("Starting store performance analysis")
 
@@ -108,6 +111,103 @@ def analyze_products(Order_Details, Customer_Feedback, Transactions):
         'top_products': top_10_products.to_dict('records'),
         'product_ratings': product_performance[['item_name', 'total_revenue', 'rating_overall']].to_dict('records')
     }
+def perform_rfm_analysis(Customers, Transactions):
+    """Perform RFM (Recency, Frequency, Monetary) analysis"""
+    current_date = pd.Timestamp.now()
+    
+    # Calculate RFM metrics
+    rfm = Transactions.groupby('customer_id').agg({
+        'date_time': lambda x: (current_date - x.max()).days,  # Recency
+        'transaction_id': 'count',  # Frequency
+        'final_total': 'sum'  # Monetary
+    }).reset_index()
+    
+    # Rename columns
+    rfm.columns = ['customer_id', 'recency', 'frequency', 'monetary']
+    
+    # Create scores
+    rfm['r_score'] = pd.qcut(rfm['recency'], q=5, labels=[5,4,3,2,1])
+    rfm['f_score'] = pd.qcut(rfm['frequency'], q=5, labels=[1,2,3,4,5])
+    rfm['m_score'] = pd.qcut(rfm['monetary'], q=5, labels=[1,2,3,4,5])
+    
+    # Calculate RFM Score
+    rfm['rfm_score'] = rfm['r_score'].astype(str) + rfm['f_score'].astype(str) + rfm['m_score'].astype(str)
+    
+    # Segment customers
+    def segment_customers(row):
+        if row['r_score'] == 5 and row['f_score'] == 5:
+            return 'Champions'
+        elif row['r_score'] >= 4 and row['f_score'] >= 4:
+            return 'Loyal Customers'
+        elif row['r_score'] >= 3:
+            return 'Active Customers'
+        elif row['r_score'] == 1:
+            return 'Lost Customers'
+        else:
+            return 'At Risk'
+    
+    rfm['customer_segment'] = rfm.apply(segment_customers, axis=1)
+    
+    return rfm
+
+def analyze_product_affinity(Order_Details):
+    """Analyze which products are commonly purchased together"""
+    from itertools import combinations
+    
+    # Get transactions with multiple items
+    transaction_items = Order_Details.groupby('transaction_id')['item_name'].agg(list).reset_index()
+    
+    # Find frequent item pairs
+    item_pairs = []
+    support_dict = {}
+    
+    for items in transaction_items['item_name']:
+        pairs = list(combinations(sorted(items), 2))
+        item_pairs.extend(pairs)
+        
+    for pair in item_pairs:
+        support_dict[pair] = support_dict.get(pair, 0) + 1
+        
+    # Convert to DataFrame
+    affinity_df = pd.DataFrame(list(support_dict.items()), columns=['item_pair', 'frequency'])
+    affinity_df['support'] = affinity_df['frequency'] / len(transaction_items)
+    
+    return affinity_df.sort_values('frequency', ascending=False).head(10)
+
+def analyze_store_efficiency(Transactions, store_sizes, default_size=1000):
+    """Calculate store efficiency metrics with fallback for missing store sizes"""
+    store_metrics = Transactions.groupby('store_location').agg({
+        'final_total': 'sum',
+        'transaction_id': 'count'
+    }).reset_index()
+
+    store_sizes_series = pd.Series(store_sizes)
+    store_metrics['store_size'] = store_metrics['store_location'].map(store_sizes_series).fillna(default_size)
+
+    store_metrics['sales_per_sqft'] = store_metrics['final_total'] / store_metrics['store_size']
+    store_metrics['avg_transaction_value'] = store_metrics['final_total'] / store_metrics['transaction_id']
+
+    return store_metrics
+
+
+def calculate_price_elasticity(Order_Details):
+    """Calculate price elasticity of products"""
+    product_metrics = Order_Details.groupby('item_name').agg({
+        'unit_price': 'mean',
+        'quantity': 'sum',
+        'total_price': 'sum'
+    }).reset_index()
+
+    # Calculate price elasticity (handle NaN or division issues)
+    product_metrics['price_elasticity'] = (
+        product_metrics['quantity'].pct_change() / product_metrics['unit_price'].pct_change()
+    )
+    product_metrics['price_elasticity'].replace([np.inf, -np.inf], np.nan, inplace=True)
+    product_metrics['price_elasticity'].fillna(0, inplace=True)
+
+    return product_metrics
+
+
 
 def analyze_time(Transactions):
     logging.info("Starting time-based analysis")
@@ -161,16 +261,28 @@ def perform_analysis(filepath):
     product_metrics = analyze_products(Order_Details, Customer_Feedback, Transactions)
     time_metrics = analyze_time(Transactions)
 
+    # Add new analyses
+    rfm_analysis = perform_rfm_analysis(Customers, Transactions)
+    product_affinity = analyze_product_affinity(Order_Details)
+    store_efficiency = analyze_store_efficiency(Transactions, 
+                                              store_sizes={"Store1": 1000, "Store2": 1200})  # Update with your actual store sizes
+    price_elasticity = calculate_price_elasticity(Order_Details)
+
     # Combine all metrics
     results = {
         **customer_metrics,
         **store_metrics,
         **product_metrics,
-        **time_metrics
+        **time_metrics,
+        'customer_segments': rfm_analysis['customer_segment'].value_counts().to_dict(),
+        'top_product_pairs': product_affinity.to_dict('records'),
+        'store_efficiency': store_efficiency.to_dict('records'),
+        'price_elasticity': price_elasticity.to_dict('records')
     }
 
     logging.info("Analysis completed")
     return results
+
 
 @app.route('/')
 def home():
