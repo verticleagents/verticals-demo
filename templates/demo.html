@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Book a Demo - Verticals AI</title>
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 10, 15, 0.9);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.active {
+            display: flex;
+            opacity: 1;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, rgba(26, 32, 44, 0.95), rgba(17, 24, 39, 0.95));
+            border-radius: 20px;
+            padding: 40px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            border: 1px solid rgba(79, 159, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .modal.active .modal-content {
+            transform: scale(1);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .close-modal:hover {
+            transform: rotate(90deg);
+            color: #4f9fff;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            color: #fff;
+            margin-bottom: 20px;
+            text-align: center;
+            background: linear-gradient(45deg, #4f9fff, #ff4f8b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(79, 159, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;  /* This ensures the selected text is white */
+            font-size: 16px;
+            transition: all 0.3s ease;
+            -webkit-appearance: none;  /* Removes default browser styling */
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+            padding-right: 40px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #4f9fff;
+            box-shadow: 0 0 0 2px rgba(79, 159, 255, 0.2);
+        }
+
+        .form-group select option {
+            background-color: #1a1a2a;  /* Dark background for options */
+            color: #fff;  /* White text for options */
+            padding: 12px;
+        }
+
+        /* Style for when the select is focused */
+        .form-group select:focus {
+            outline: none;
+            border-color: #4f9fff;
+            box-shadow: 0 0 0 2px rgba(79, 159, 255, 0.2);
+        }
+
+        /* For Firefox */
+        .form-group select:-moz-focusring {
+            color: transparent;
+            text-shadow: 0 0 0 #fff;
+        }
+
+        /* For IE/Edge */
+        .form-group select::-ms-expand {
+            display: none;
+        }
+
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(45deg, #4f9fff, #ff4f8b);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 159, 255, 0.2);
+        }
+
+        @media (max-width: 768px) {
+            .modal-content {
+                padding: 30px;
+                width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="demoModal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal">&times;</button>
+            <h2 class="modal-title">Book a Demo</h2>
+            <form id="demoForm">
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="email">Business Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="company">Company Name</label>
+                    <input type="text" id="company" name="company" required>
+                </div>
+                <div class="form-group">
+                    <label for="business-type">Business Type</label>
+                    <select id="business-type" name="business-type" required>
+                        <option value="">Select Business Type</option>
+                        <option value="ecommerce">E-commerce</option>
+                        <option value="saas">SaaS</option>
+                        <option value="retail">Retail</option>
+                        <option value="finance">Finance</option>
+                        <option value="healthcare">Healthcare</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="message">Additional Information</label>
+                    <textarea id="message" name="message" rows="3"></textarea>
+                </div>
+                <button type="submit" class="submit-btn">Request Demo</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Add this script to your existing page
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('demoModal');
+            const closeBtn = document.querySelector('.close-modal');
+            const getStartedBtn = document.querySelector('.cta-button');
+            const demoForm = document.getElementById('demoForm');
+
+            // Open modal
+            getStartedBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            });
+
+            // Close modal
+            closeBtn.addEventListener('click', () => {
+                modal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            });
+
+            // Close modal when clicking outside
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                    document.body.style.overflow = 'auto';
+                }
+            });
+
+            // Form submission
+            demoForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                // Add your form submission logic here
+                alert('Demo request submitted successfully! We will contact you soon.');
+                modal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+                demoForm.reset();
+            });
+        });
+    </script>
+</body>
+</html>
