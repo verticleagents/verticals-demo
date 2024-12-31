@@ -456,6 +456,121 @@
             }
         }
 
+        .uplift-section {
+            padding: 100px 0;
+            background: rgba(10, 10, 15, 0.95);
+        }
+
+        .uplift-content {
+            display: flex;
+            gap: 4rem;
+            margin-top: 2rem;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            flex: 2;
+        }
+
+        .grid-box {
+            border: 1px solid rgba(79, 159, 255, 0.1);
+            border-radius: 10px;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .grid-box:hover {
+            transform: translateY(-5px);
+            border-color: rgba(79, 159, 255, 0.3);
+            box-shadow: 0 5px 15px rgba(79, 159, 255, 0.1);
+        }
+
+        .box-content h3 {
+            color: #4f9fff;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .box-content p {
+            color: #cccccc;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .visualization {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .circle-line {
+            position: relative;
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .circle {
+            width: 100px;
+            height: 100px;
+            border: 2px solid #4f9fff;
+            border-radius: 50%;
+            margin-right: 2rem;
+        }
+
+        .line {
+            width: 100px;
+            height: 2px;
+            background: #4f9fff;
+            transform: rotate(45deg);
+        }
+
+        .wave-container {
+            height: 150px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .wave {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: #4f9fff;
+            opacity: 0.3;
+        }
+
+        .wave:nth-child(1) {
+            top: 30%;
+            animation: waveAnimation 3s infinite ease-in-out;
+        }
+
+        .wave:nth-child(2) {
+            top: 50%;
+            animation: waveAnimation 3s infinite ease-in-out 0.5s;
+        }
+
+        .wave:nth-child(3) {
+            top: 70%;
+            animation: waveAnimation 3s infinite ease-in-out 1s;
+        }
+
+        @keyframes waveAnimation {
+            0%, 100% {
+                transform: translateX(0) scaleX(1);
+            }
+            50% {
+                transform: translateX(-30%) scaleX(1.5);
+            }
+        }
+
+
+
+
         @media (max-width: 768px) {
             .container {
                 padding: 2rem 1rem;
@@ -1403,7 +1518,27 @@
                 -webkit-text-fill-color: initial;
             }
         }
-                
+
+        @media (max-width: 992px) {
+            .uplift-content {
+                flex-direction: column;
+            }
+            
+            .grid-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .visualization {
+                margin-top: 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .grid-container {
+                grid-template-columns: 1fr;
+            }
+        }
+                        
                 
     </style>
 </head>
@@ -1516,80 +1651,60 @@
                 </div>
             </div>
         </section>
-
-
-
-        <div class="container">
-            <div class="header">
-                <h1>Uplift Modeling</h1>
-                <p>Transform your customer insights with AI-powered predictive analytics</p>
-            </div>
-    
-            <div class="animation-section">
-                <div class="icon-transition">
-                    <div class="icon-container">
-                        <div class="icon-circle">
-                            <div class="sliders">
-                                <div class="slider"></div>
-                                <div class="slider"></div>
-                                <div class="slider"></div>
+        <section class="section uplift-section">
+            <div class="container">
+                <div class="header">
+                    <h2>Uplift Modeling</h2>
+                    <p>Transform your customer insights with AI-powered predictive analytics</p>
+                </div>
+        
+                <div class="uplift-content">
+                    <!-- Left Grid -->
+                    <div class="grid-container">
+                        <div class="grid-box">
+                            <div class="box-content">
+                                <h3>Predictive Intelligence</h3>
+                                <p>Advanced ML algorithms analyze patterns to predict customer behavior</p>
+                            </div>
+                        </div>
+                        <div class="grid-box">
+                            <div class="box-content">
+                                <h3>Precision Targeting</h3>
+                                <p>Identify and engage high-value segments through analysis</p>
+                            </div>
+                        </div>
+                        <div class="grid-box">
+                            <div class="box-content">
+                                <h3>Real-time Analytics</h3>
+                                <p>Monitor and optimize campaign performance with live metrics</p>
+                            </div>
+                        </div>
+                        <div class="grid-box">
+                            <div class="box-content">
+                                <h3>Adaptive Optimization</h3>
+                                <p>Continuously evolve strategies using AI-driven feedback</p>
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="arrow"></div>
-                    
-                    <div class="graph-container">
-                        <div class="graph">
-                            <div class="graph-line"></div>
-                            <div class="graph-trend"></div>
+        
+                    <!-- Right Visualization -->
+                    <div class="visualization">
+                        <!-- Circle and Line Animation -->
+                        <div class="circle-line">
+                            <div class="circle"></div>
+                            <div class="line"></div>
+                        </div>
+                        
+                        <!-- Wave Animation -->
+                        <div class="wave-container">
+                            <div class="wave"></div>
+                            <div class="wave"></div>
+                            <div class="wave"></div>
                         </div>
                     </div>
                 </div>
             </div>
-    
-            <div class="pulse-container">
-                <div class="pulse">
-                    <svg viewBox="0 0 1200 200" class="wave">
-                        <path d="M0 100 Q300 50 600 100 T1200 100 T1800 100" />
-                    </svg>
-                    <svg viewBox="0 0 1200 200" class="wave">
-                        <path d="M0 100 Q300 150 600 100 T1200 100 T1800 100" />
-                    </svg>
-                    <svg viewBox="0 0 1200 200" class="wave">
-                        <path d="M0 100 Q300 70 600 100 T1200 100 T1800 100" />
-                    </svg>
-                </div>
-            </div>
-    
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">⚡</div>
-                    <h3 class="feature-title">Predictive Intelligence</h3>
-                    <p class="feature-desc">Advanced ML algorithms analyze patterns to predict customer behavior with unprecedented accuracy</p>
-                </div>
-    
-                <div class="feature-card">
-                    <div class="feature-icon">🎯</div>
-                    <h3 class="feature-title">Precision Targeting</h3>
-                    <p class="feature-desc">Identify and engage high-value segments through sophisticated behavioral analysis</p>
-                </div>
-    
-                <div class="feature-card">
-                    <div class="feature-icon">📊</div>
-                    <h3 class="feature-title">Real-time Analytics</h3>
-                    <p class="feature-desc">Monitor and optimize campaign performance with live metrics and intelligent insights</p>
-                </div>
-    
-                <div class="feature-card">
-                    <div class="feature-icon">🔄</div>
-                    <h3 class="feature-title">Adaptive Optimization</h3>
-                    <p class="feature-desc">Continuously evolve strategies using AI-driven feedback loops and market dynamics</p>
-                </div>
-            </div>
-        </div>
-
-
+        </section>
 
         <section id="workflow" class="section">
             <h2>How It Works</h2>
@@ -1799,6 +1914,47 @@
                 }
             });
         });
+
+        gsap.from('.grid-box', {
+            y: 50,
+            opacity: 0,
+            duration: 1,
+            stagger: 0.2,
+            scrollTrigger: {
+                trigger: '.uplift-section',
+                start: "top 80%",
+                end: "top 50%",
+                scrub: 1
+            }
+        });
+
+        gsap.from('.circle-line', {
+            x: 50,
+            opacity: 0,
+            duration: 1,
+            scrollTrigger: {
+                trigger: '.uplift-section',
+                start: "top 80%",
+                end: "top 50%",
+                scrub: 1
+            }
+        });
+
+        gsap.from('.wave-container', {
+            x: 50,
+            opacity: 0,
+            duration: 1,
+            scrollTrigger: {
+                trigger: '.uplift-section',
+                start: "top 80%",
+                end: "top 50%",
+                scrub: 1
+            }
+        });
+
+
+
+
     
     </script>
     <script>
