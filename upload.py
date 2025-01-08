@@ -2,15 +2,11 @@ import pandas as pd
 from sqlalchemy import create_engine
 
 def upload_data_to_postgresql(file_path):
-    # PostgreSQL configurations
-    hostname = "dpg-ctvg5sogph6c73dsjth0-a"
-    port = 5432
-    database = "verticals_psql"
-    username = "verticals_psql_user"
-    password = "HiHvIw1VI6jY5iHCr0xutf57kQAZDcLt"
+    # PostgreSQL External Database URL
+    db_url = "postgresql://verticals_psql_user:HiHvIw1VI6jY5iHCr0xutf57kQAZDcLt@dpg-ctvg5sogph6c73dsjth0-a.oregon-postgres.render.com/verticals_psql"
 
-    # Connection string
-    engine = create_engine(f"postgresql://{username}:{password}@{hostname}:{port}/{database}")
+    # Create database engine
+    engine = create_engine(db_url)
 
     # Load the Excel file with all sheets
     excel_data = pd.ExcelFile(file_path)
